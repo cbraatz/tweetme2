@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+    
+{% block title %}
+    Tweetme2
+{% endblock title %}
+
+{% block content %}
+    <h1>Welcome to Tweetme 2</h1>
+    <div id='tweets'>
+        loading...
+    </div>
+    <script>
+        const tweetsElement=document.getElementById("tweets")
+        tweetsElement.innerHTML=""
+        const xhr=new XMLHttpRequest()
+        const method= 'GET' 
+        const url = "/tweets" //el que va a retornar el json
+        const responseType="json"
+
+        function formatTweetElement(tweet){
+            var formattedTweet="<div class='mb-4 tweet' id='tweet-"+tweet.id+"'><h1>"+tweet.id+"</h1>"+"<p>"+tweet.content+"</p></div>"
+            return formattedTweet
+        }
+        xhr.responseType = responseType
+        xhr.open(method,url)//abre la url
+        xhr.onload=function(){
+            console.log("resp1")
+            console.log(xhr.response) //loguear la respuesta 
+            const serverResponse = xhr.response
+            var listedItems = serverResponse.response//is an array
+            console.log("listed items:")
+            console.log(listedItems)
+            var finalTweetStr=""
+            var i;
+            for(i=0;i<listedItems.length;i++){
+                currentItem=formatTweetElement(listedItems[i])
+                finalTweetStr+=currentItem
+            }
+            tweetsElement.innerHTML=finalTweetStr
+        }
+        xhr.send() //envia la request
+    </script>
+{% endblock content %}
