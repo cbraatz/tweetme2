@@ -5,7 +5,12 @@
 {% endblock title %}
 
 {% block content %}
-    <h1>Welcome to Tweetme 2</h1>
+    <div class='row text-center'>
+        <div class='col'>
+            <h1>Welcome to Tweetme</h1>
+        </div>
+    </div>
+        <div id='tweets'>
     <div id='tweets'>
         loading...
     </div>
@@ -16,11 +21,22 @@
         const method= 'GET' 
         const url = "/tweets" //el que va a retornar el json
         const responseType="json"
+        function handleDidLike(tweet_id,currentCount){
+            console.log(tweet_id+"++"+currentCount)
+            return
+        }
+        function likeBtn(tweet){
+            return "<button class='btn btn-primary btn-sm' onClick=handleDidLike("+tweet.id+","+tweet.likes+")>"+tweet.likes+" Likes</button>"
+        }
 
         function formatTweetElement(tweet){
-            var formattedTweet="<div class='mb-4 tweet' id='tweet-"+tweet.id+"'><h1>"+tweet.id+"</h1>"+"<p>"+tweet.content+"</p></div>"
+            var formattedTweet="<div class='mb-4 tweet' id='tweet-"+tweet.id+"'><h1>"+tweet.id
+            +"</h1>"+"<p>"+tweet.content+
+            "</p><div class='btn-group'>"+likeBtn(tweet)+    
+            "</div></div>"
             return formattedTweet
         }
+
         xhr.responseType = responseType
         xhr.open(method,url)//abre la url
         xhr.onload=function(){
