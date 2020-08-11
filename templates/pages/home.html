@@ -28,13 +28,33 @@
         </div>
     </div>
     <script>
-        function handleTweetCreateFormDidSubmit(event ){
-            event.preventDefault()//evita que haga la acción de submit del boton del form.
-            console.log(event)
+        function handleTweetCreateFormDidSubmit(event){
+            event.preventDefault()//evita que haga la acción con redireccionamiento de submit del boton del form.
+            const myForm=event.target //target basicamente es el formulario en html que viene en el event
+            const url=myForm.getAttribute("action") //obtiene el action del form que seria '/create-tweet'
+            const method=myForm.getAttribute("method") //similar a action
+            const myFormData= new FormData(myForm) //es para convertir myForm a algo casi como un diccionario de los datos del formulario, pero no bien, sirve en caso de que querramos por ej. agregar imagenes dentro y upload dinámico de esas imágenes
+            const xhr=new XMLHttpRequest()
+            xhr.open(method,url)//abre la url
+             
+            //las siguientes 2 lineas es para convertir el request en un tipo ajax aceptado por django como se explica en https://docs.djangoproject.com/en/3.0/ref/request-response/  >>> HttpRequest.is_ajax()
+            xhr.setRequestHeader("HTTP_X_REQUESTED_WITH","XMLHttpRequest")
+            xhr.setRequestHeader("X-Requested-With","XMLHttpRequest")
+
+            xhr.onload=function(){
+                const serverResponse = xhr.response
+                console.log(xhr.status, serverResponse)//recibe el return de tweet_create_view, antes de implementar return JsonResponse reniamos el redirect(next_url), entonces recibia la pagina entera
+                const tweetsEl=document.getElementById("tweets")
+                loadTweets(tweetsEl)//con esto logramos que recargue los tweets sin necesidad de recargar la página
+            }
+            xhr.send(myFormData)
         }
+
         const tweetCreateFormEl=document.getElementById("tweet-create-form")
         tweetCreateFormEl.addEventListener("submit", handleTweetCreateFormDidSubmit)
+
         const tweetsEl=document.getElementById("tweets")
+
         function loadTweets(tweetsElement){
             const xhr=new XMLHttpRequest()
             const method= 'GET' 
@@ -43,7 +63,7 @@
             xhr.responseType = responseType
             xhr.open(method,url)//abre la url
             xhr.onload=function(){
-                console.log(xhr.response) //loguear la respuesta 
+                //console.log(xhr.response) //loguear la respuesta 
                 const serverResponse = xhr.response
                 var listedItems = serverResponse.response//is an array
                 var finalTweetStr=""

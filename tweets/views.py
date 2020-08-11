@@ -16,8 +16,11 @@ def home_view(request, *args, **kwargs):
 def tweet_create_view(request, *args, **kwargs):
     form = TweetForm(request.POST or None) # el formulario puede ser inicializado con datos o sin
     next_url = request.POST.get("next") or None # next es el hiddenfield del form en home osea sería /
-    if form.is_valid():
+    if form.is_valid(): 
         obj=form.save()
+        if request.is_ajax():#retorna true si viene del javascript con los headers especiales que pide django para un ajax request
+            print("responding by ajax")
+            return JsonResponse({}, status=201) #201 es el estado para created items
         if next_url != None and is_safe_url(next_url,ALLOWED_HOSTS): # si va a un host seguro, seteado en settings.py > ALLOWED_HOSTS
             return redirect(next_url)
         form=TweetForm() #si viene con datos guarda y crea un TweetForm vacio
