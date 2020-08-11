@@ -10,17 +10,53 @@
             <h1>Welcome to Tweetme</h1>
         </div>
     </div>
-        <div id='tweets'>
-    <div class='row' id='tweets'>
-        loading...
+
+    <div class='row mb-3'>
+        <div class='col-md-4 mx-auto col-10'>
+            <form class='form' id='tweet-create-form' method='POST' action='/create-tweet'>
+                {% csrf_token %}
+                <input type='hidden' value='/' name='next'/> <!-- to redirect to home page -->
+                <textarea class='form-control' name='content' placeholder='Your tweet...'></textarea>
+                <button type='submit' class='btn btn-primary'>Tweet</button>
+            </form>
+        </div>
+    </div>
+
+    <div id='tweets'>
+        <div class='row' id='tweets'>
+            loading...
+        </div>
     </div>
     <script>
-        const tweetsElement=document.getElementById("tweets")
-        tweetsElement.innerHTML=""
-        const xhr=new XMLHttpRequest()
-        const method= 'GET' 
-        const url = "/tweets" //el que va a retornar el json
-        const responseType="json"
+        function handleTweetCreateFormDidSubmit(event ){
+            event.preventDefault()//evita que haga la acción de submit del boton del form.
+            console.log(event)
+        }
+        const tweetCreateFormEl=document.getElementById("tweet-create-form")
+        tweetCreateFormEl.addEventListener("submit", handleTweetCreateFormDidSubmit)
+        const tweetsEl=document.getElementById("tweets")
+        function loadTweets(tweetsElement){
+            const xhr=new XMLHttpRequest()
+            const method= 'GET' 
+            const url = "/tweets" //el que va a retornar el json
+            const responseType="json"
+            xhr.responseType = responseType
+            xhr.open(method,url)//abre la url
+            xhr.onload=function(){
+                console.log(xhr.response) //loguear la respuesta 
+                const serverResponse = xhr.response
+                var listedItems = serverResponse.response//is an array
+                var finalTweetStr=""
+                var i;
+                for(i=0;i<listedItems.length;i++){
+                    currentItem=formatTweetElement(listedItems[i])
+                    finalTweetStr+=currentItem
+                }
+                tweetsElement.innerHTML=finalTweetStr
+            }
+            xhr.send() //envia la request
+        }
+        loadTweets(tweetsEl)
         function handleDidLike(tweet_id,currentCount){
             console.log(tweet_id+"++"+currentCount)
             return
@@ -37,23 +73,6 @@
             return formattedTweet
         }
 
-        xhr.responseType = responseType
-        xhr.open(method,url)//abre la url
-        xhr.onload=function(){
-            console.log("resp1")
-            console.log(xhr.response) //loguear la respuesta 
-            const serverResponse = xhr.response
-            var listedItems = serverResponse.response//is an array
-            console.log("listed items:")
-            console.log(listedItems)
-            var finalTweetStr=""
-            var i;
-            for(i=0;i<listedItems.length;i++){
-                currentItem=formatTweetElement(listedItems[i])
-                finalTweetStr+=currentItem
-            }
-            tweetsElement.innerHTML=finalTweetStr
-        }
-        xhr.send() //envia la request
+        
     </script>
 {% endblock content %}
