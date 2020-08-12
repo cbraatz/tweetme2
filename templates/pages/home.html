@@ -15,8 +15,9 @@
         <div class='col-md-4 mx-auto col-10'>
             <form class='form' id='tweet-create-form' method='POST' action='/create-tweet'>
                 {% csrf_token %}
+                <div class='d-none alert alert-danger' id='tweet-create-form-error'></div>
                 <input type='hidden' value='/' name='next'/> <!-- to redirect to home page -->
-                <textarea class='form-control' name='content' placeholder='Your tweet...'></textarea>
+                <textarea required='required' class='form-control' name='content' placeholder='Your tweet...'></textarea>
                 <button type='submit' class='btn btn-primary'>Tweet</button>
             </form>
         </div>
@@ -28,6 +29,16 @@
         </div>
     </div>
     <script>
+        function handleTweetFormError(msg,display){
+            var myErrorDiv=document.getElementById("tweet-create-form-error")
+            if(display===true){
+                myErrorDiv.setAttribute("class","d-block alert alert-danger")
+                myErrorDiv.innerText=msg
+            }else{
+                myErrorDiv.setAttribute("class","d-none alert alert-danger")
+                myErrorDiv.innerText=""
+            }
+        }
         function handleTweetCreateFormDidSubmit(event){
             event.preventDefault()//evita que haga la acción con redireccionamiento de submit del boton del form.
             const myForm=event.target //target basicamente es el formulario en html que viene en el event
@@ -35,6 +46,10 @@
             const method=myForm.getAttribute("method") //similar a action
             const myFormData= new FormData(myForm) //es para convertir myForm a algo casi como un diccionario de los datos del formulario, pero no bien, sirve en caso de que querramos por ej. agregar imagenes dentro y upload dinámico de esas imágenes
             const xhr=new XMLHttpRequest()
+            
+            const responseType="json" //para que el response ya venga parseado a Json, si no se debe usar JSON.parse(xhr.response) para que venga bien
+            xhr.responseType = responseType
+            
             xhr.open(method,url)//abre la url
              
             //las siguientes 2 lineas es para convertir el request en un tipo ajax aceptado por django como se explica en https://docs.djangoproject.com/en/3.0/ref/request-response/  >>> HttpRequest.is_ajax()
@@ -42,10 +57,42 @@
             xhr.setRequestHeader("X-Requested-With","XMLHttpRequest")
 
             xhr.onload=function(){
-                const serverResponse = xhr.response
-                console.log(xhr.status, serverResponse)//recibe el return de tweet_create_view, antes de implementar return JsonResponse reniamos el redirect(next_url), entonces recibia la pagina entera
-                const tweetsEl=document.getElementById("tweets")
-                loadTweets(tweetsEl)//con esto logramos que recargue los tweets sin necesidad de recargar la página
+                if(xhr.status===201){
+                    handleTweetFormError("",false)
+                    const newTweetJson = xhr.response
+                    //const newTweetJson=JSON.parse(newTweet)
+                    const newTweetElement=formatTweetElement(newTweetJson)
+                    //console.log(newTweetElement)
+                    const ogHtml=tweetsContainerElement.innerHTML
+                    tweetsContainerElement.innerHTML=newTweetElement+ogHtml
+                    myForm.reset() //limpia el campo de texto con el texto ingresado.
+                }else if(xhr.status===400){
+                    const errorJson=xhr.response
+                    const contentError=errorJson.content
+                    console.log(errorJson)
+                    let contentErrorMsg;
+                    if(contentError){
+                        contentErrorMsg=contentError[0]
+                        if(contentErrorMsg){
+                            handleTweetFormError(contentErrorMsg,true)
+                        }else{
+                            alert("A 400-1 error occurred. Please try again.")
+                        }
+                    }else{
+                        alert("A 400-2 error occurred. Please try again.")
+                    }
+                    console.log(contentErrorMsg)
+
+
+                }else if(xhr.status===500){
+                    alert("There was a server error. Please try again.") //Server error es algun error dentro del codigo del servidor, ej llavar incorrectamente a una variable
+                }
+                //console.log(xhr.status, newTweet)//recibe el return de tweet_create_view, antes de implementar return JsonResponse reniamos el redirect(next_url), entonces recibia la pagina entera
+                //const tweetsEl=document.getElementById("tweets")
+                //loadTweets(tweetsEl)//con esto logramos que recargue los tweets sin necesidad de recargar la página
+            }
+            xhr.onerror= function(){
+                alert("An error occurred. Please try again later.") //Este error muestra cuando ocurre algo mas grave, por ej si para el servidor y se trata de agregar un tweet.
             }
             xhr.send(myFormData)
         }
@@ -53,7 +100,7 @@
         const tweetCreateFormEl=document.getElementById("tweet-create-form")
         tweetCreateFormEl.addEventListener("submit", handleTweetCreateFormDidSubmit)
 
-        const tweetsEl=document.getElementById("tweets")
+        const tweetsContainerElement=document.getElementById("tweets")
 
         function loadTweets(tweetsElement){
             const xhr=new XMLHttpRequest()
@@ -76,7 +123,7 @@
             }
             xhr.send() //envia la request
         }
-        loadTweets(tweetsEl)
+        loadTweets(tweetsContainerElement)
         function handleDidLike(tweet_id,currentCount){
             console.log(tweet_id+"++"+currentCount)
             return

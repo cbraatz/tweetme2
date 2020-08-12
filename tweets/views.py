@@ -19,11 +19,14 @@ def tweet_create_view(request, *args, **kwargs):
     if form.is_valid(): 
         obj=form.save()
         if request.is_ajax():#retorna true si viene del javascript con los headers especiales que pide django para un ajax request
-            print("responding by ajax")
-            return JsonResponse({}, status=201) #201 es el estado para created items
+            #print("responding by ajax con Json")
+            return JsonResponse(obj.serialize(), status=201) #201 es el estado para created items
         if next_url != None and is_safe_url(next_url,ALLOWED_HOSTS): # si va a un host seguro, seteado en settings.py > ALLOWED_HOSTS
             return redirect(next_url)
         form=TweetForm() #si viene con datos guarda y crea un TweetForm vacio
+    if form.errors:
+        if request.is_ajax():
+            return JsonResponse(form.errors, status=400) #Retorna en Json si hay un error en el servidor
     return render(request, 'components/form.html',context={"form":form})
 
 def tweet_list_view(request,*args, **kwargs):
@@ -33,7 +36,7 @@ def tweet_list_view(request,*args, **kwargs):
     return json data
     """
     qs=Tweet.objects.all()
-    tweets_list=[{"id":x.id,"content":x.content,"likes":12} for x in qs]
+    tweets_list=[x.serialize() for x in qs]
     data={
         "isUser": False,
         "response":tweets_list
