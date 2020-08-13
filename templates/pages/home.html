@@ -82,8 +82,9 @@
                         alert("A 400-2 error occurred. Please try again.")
                     }
                     console.log(contentErrorMsg)
-
-
+                }else if(xhr.status===401){
+                    alert("You must login!")
+                    window.location.href='/login'
                 }else if(xhr.status===500){
                     alert("There was a server error. Please try again.") //Server error es algun error dentro del codigo del servidor, ej llavar incorrectamente a una variable
                 }

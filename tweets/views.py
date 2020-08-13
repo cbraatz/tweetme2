@@ -10,13 +10,24 @@ ALLOWED_HOSTS=settings.ALLOWED_HOSTS
 
 # Create your views here.
 def home_view(request, *args, **kwargs):
-    #return HttpResponse("<h1>Home View</h1>")
+    print(request.user or None)
     return render(request,"pages/home.html",context={},status=200)
 
 def tweet_create_view(request, *args, **kwargs):
+    '''''
+    REST API Create View sin Django REST Framework (DRF)
+    '''''
+    user=request.user #para que user no sea AnonymousUser
+    if not request.user.is_authenticated:
+        user=None
+        if request.is_ajax():
+            return JsonResponse({},status=401)
+        return redirect(settings.LOGIN_URL)
     form = TweetForm(request.POST or None) # el formulario puede ser inicializado con datos o sin
     next_url = request.POST.get("next") or None # next es el hiddenfield del form en home osea sería /
     if form.is_valid(): 
+        obj=form.save(commit=False)
+        obj.user=user
         obj=form.save()
         if request.is_ajax():#retorna true si viene del javascript con los headers especiales que pide django para un ajax request
             #print("responding by ajax con Json")

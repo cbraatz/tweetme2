@@ -26,7 +26,7 @@ SECRET_KEY = 'j^55x&%71s$$wb#wdc=k405i371_x(gzjb$@topkj=fwxh2j_y'
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '.mydomain.com'] # IMPORTANTE agregado para asegurar que los redirects vayan a hosts seguros.
-
+LOGIN_URL="/login" # el por defecto es "/accounts/login/"
 
 # Application definition
 
