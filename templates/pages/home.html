@@ -82,13 +82,13 @@
                         alert("A 400-2 error occurred. Please try again.")
                     }
                     console.log(contentErrorMsg)
-                }else if(xhr.status===401){
+                }else if(xhr.status===403){ //403 was the correct status for not logged-in
                     alert("You must login!")
                     window.location.href='/login'
                 }else if(xhr.status===500){
                     alert("There was a server error. Please try again.") //Server error es algun error dentro del codigo del servidor, ej llavar incorrectamente a una variable
                 }
-                //console.log(xhr.status, newTweet)//recibe el return de tweet_create_view, antes de implementar return JsonResponse reniamos el redirect(next_url), entonces recibia la pagina entera
+                //console.log(xhr.status, newTweet)//recibe el return de tweet_create_view_pure_django, antes de implementar return JsonResponse reniamos el redirect(next_url), entonces recibia la pagina entera
                 //const tweetsEl=document.getElementById("tweets")
                 //loadTweets(tweetsEl)//con esto logramos que recargue los tweets sin necesidad de recargar la página
             }
@@ -111,9 +111,8 @@
             xhr.responseType = responseType
             xhr.open(method,url)//abre la url
             xhr.onload=function(){
-                //console.log(xhr.response) //loguear la respuesta 
                 const serverResponse = xhr.response
-                var listedItems = serverResponse.response//is an array
+                var listedItems = serverResponse//.response ...cambio para ser compatible con DRF..
                 var finalTweetStr=""
                 var i;
                 for(i=0;i<listedItems.length;i++){
@@ -140,7 +139,5 @@
             "</div></div>"
             return formattedTweet
         }
-
-        
     </script>
 {% endblock content %}
