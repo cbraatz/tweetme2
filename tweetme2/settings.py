@@ -28,6 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', '.mydomain.com'] # IMPORTANTE agregado para asegurar que los redirects vayan a hosts seguros.
 LOGIN_URL="/login" # el por defecto es "/accounts/login/"
 MAX_TWEET_LENGTH=240
+TWEET_ACTION_OPTIONS=["like","unlike","retweet"]
+
 
 # Application definition
 
@@ -135,5 +137,5 @@ REST_FRAMEWORK = { #configuraciones de DRF, documentacion aca https://www.django
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         #'rest_framework.authentication.BasicAuthentication' #deshabilitado por ahora
-    ],'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES #definido arriba
+    ],'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
 }
