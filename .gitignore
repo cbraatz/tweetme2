@@ -1,1 +1,5 @@
 db.sqlite3
+.vscode
+Pipfile
+Pipfile.lock
+tweetme2-code-workspace.code-workspace
