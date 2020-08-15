@@ -13,6 +13,7 @@ class TweetLike(models.Model):
 # Create your models here.
 class Tweet(models.Model):
     # id = models.AutoField(primary_key=True)
+    parent= models.ForeignKey("self",null=True,on_delete=models.SET_NULL)#se referencia a si mismo y si se borra el padre, el fk queda null
     user = models.ForeignKey(User, on_delete=models.CASCADE) # a user can have many tweets, si se borra el user se borran tambien todos sus tweets
     likes = models.ManyToManyField(User, related_name="tweet_user", blank=True, through=TweetLike)
     content = models.TextField(blank=True, null=True)

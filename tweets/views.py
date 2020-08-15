@@ -65,7 +65,7 @@ def tweet_action_view(request,*args, **kwargs):
     id is required
     REST API - Action View con Django REST Framework (DRF)
     '''
-    serializer=TweetActionSerializer(data=request.POST)
+    serializer=TweetActionSerializer(data=request.data) #Usa request.data en lugar de request.POST como antes, no se por qué, pero POST venia vacio, asi que aca funciona request.data, sino tira error de que id is required.
     if serializer.is_valid(raise_exception=True):
         data=serializer.validated_data
         tweet_id=data.get("id")
@@ -77,12 +77,15 @@ def tweet_action_view(request,*args, **kwargs):
         obj=qs.first()
         if action=="like":
             obj.likes.add(request.user)    
+            serializer=TweetSerializer(obj)
+            return Response(serializer.data,status=200)
         elif action=="unlike":   
             obj.likes.remove(request.user)
         elif action=="retweet":   
-            #this is todo
-            pass
-    return Response({"message":"Tweet removed"},status=200)#parametro status=200 no seria necesario en get requests
+            new_tweet = Tweet.objects.create(user=request.user, parent=obj)
+            serializer=TweetSerializer(new_tweet)
+            return Response(serializer.data,status=200)
+    return Response({},status=200)#sin mensaje de confirmacion ni datos de retorno
 
 @api_view(['DELETE','POST'])
 @permission_classes([IsAuthenticated])

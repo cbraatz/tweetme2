@@ -125,34 +125,57 @@
         }
         loadTweets(tweetsContainerElement)
 
-        function handleDidLike(tweet_id,currentCount){
+        function getCookie(name) {//get csfr token for the ajax post request. Doc > https://docs.djangoproject.com/en/3.0/ref/csrf/
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function handleTweetActionBtn(tweet_id, currentCount, action){
             console.log(tweet_id+"++"+currentCount)
             const url="/api/tweets/action"
             const method="POST"
             const data=JSON.stringify({
                 id: tweet_id,
-                action:"like"//by default will be like
+                action:action//by default will be like
             })
             const xhr=new XMLHttpRequest()
+            const csrftoken = getCookie('csrftoken');
             xhr.open(method,url)
             xhr.setRequestHeader("Content-Type","application/json")
             xhr.setRequestHeader("HTTP_X_REQUESTED_WITH","XMLHttpRequest")
             xhr.setRequestHeader("X-Requested-With","XMLHttpRequest")
+            xhr.setRequestHeader("X-CSRFToken",csrftoken)//necesita csrf token para cada llamada ajax que sea POST, hay formas de omitir pero mejor usar. Doc > https://docs.djangoproject.com/en/3.0/ref/csrf/
             xhr.onload=function(){
-                console.log(xhr.status,xhr.response)
+                //react.js va a manejar esto mejor, para no tener que refrescar todos los tweets luego de darle a alguna accion tipo like
+                loadTweets(tweetsContainerElement) 
             }
             xhr.send(data)
             return
         }
-
-        function likeBtn(tweet){
-            return "<button class='btn btn-primary btn-sm' onClick=handleDidLike("+tweet.id+","+tweet.likes+")>"+tweet.likes+" Likes</button>"
+        function retweetBtn(tweet){
+            return "<button class='btn btn-outline-success btn-sm' onClick=handleTweetActionBtn("+tweet.id+","+tweet.likes+",'retweet'"+")>Retweet</button>"
         }
-
+        function unlikeBtn(tweet){
+            return "<button class='btn btn-outline-primary btn-sm' onClick=handleTweetActionBtn("+tweet.id+","+tweet.likes+",'unlike'"+")>Unlike</button>"
+        }
+        function likeBtn(tweet){
+            return "<button class='btn btn-primary btn-sm' onClick=handleTweetActionBtn("+tweet.id+","+tweet.likes+",'like'"+")>"+tweet.likes+" Likes</button>"
+        }
         function formatTweetElement(tweet){
             var formattedTweet="<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 tweet' id='tweet-"+tweet.id
             +"'><p>"+tweet.content+
-            "</p><div class='btn-group'>"+likeBtn(tweet)+    
+            "</p><div class='btn-group'>"+likeBtn(tweet)+unlikeBtn(tweet)+retweetBtn(tweet)+   
             "</div></div>"
             return formattedTweet
         }
