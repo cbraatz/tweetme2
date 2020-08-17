@@ -8,6 +8,7 @@ TWEET_ACTION_OPTIONS=settings.TWEET_ACTION_OPTIONS
 class TweetActionSerializer(serializers.Serializer):
     id=serializers.IntegerField()
     action=serializers.CharField()
+    content=serializers.CharField(allow_blank=True, required=False)
 
     def validate_action(self,value):
         value=value.lower().strip() # "Like " -> "like"
@@ -16,7 +17,7 @@ class TweetActionSerializer(serializers.Serializer):
         else:
             return value
 
-class TweetSerializer(serializers.ModelSerializer):#similar a lo que hicimos en forms.py antes de empezar usar Django Rest Framework
+class TweetCreateSerializer(serializers.ModelSerializer):#Serializer para edit mode
     likes=serializers.SerializerMethodField(read_only=True)
     class Meta:
         model= Tweet
@@ -29,3 +30,14 @@ class TweetSerializer(serializers.ModelSerializer):#similar a lo que hicimos en 
         if len(value) > MAX_TWEET_LENGTH:
             raise serializers.ValidationError("This tweet is too long...!")
         return value
+
+class TweetSerializer(serializers.ModelSerializer):#Serializer para view mode
+    likes=serializers.SerializerMethodField(read_only=True)
+    parent=TweetCreateSerializer(read_only=True)
+    
+    class Meta:
+        model= Tweet
+        fields=['id','content','likes', 'is_retweet', 'parent']
+
+    def get_likes(self,obj):#No necesitamos la lista de likes sino el numero de likes de ese tweet
+        return obj.likes.count()

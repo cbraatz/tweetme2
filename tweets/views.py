@@ -8,7 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .forms import TweetForm
 from .models import Tweet
-from .serializers import TweetSerializer, TweetActionSerializer
+from .serializers import (
+    TweetSerializer, 
+    TweetCreateSerializer,
+    TweetActionSerializer
+    )
 
 ALLOWED_HOSTS=settings.ALLOWED_HOSTS
 
@@ -25,7 +29,7 @@ def tweet_create_view(request, *args, **kwargs):
     This view add a new tweet
     REST API - Create View con Django REST Framework (DRF)
     '''
-    serializer=TweetSerializer(data=request.POST)#data=request.POST tiene que estar dentro no puede estar arriba sino tira el siguiente server error: Cannot call `.is_valid()` as no `data=` keyword argument was passed when instantiating the serializer instance.
+    serializer=TweetCreateSerializer(data=request.POST)#data=request.POST tiene que estar dentro no puede estar arriba sino tira el siguiente server error: Cannot call `.is_valid()` as no `data=` keyword argument was passed when instantiating the serializer instance.
     if serializer.is_valid(raise_exception=True):#raise_exception=True significa que va a devolver los errores de validacion sin necesidad de especificar como se habia hecho antes en la ultima parte del view tweet_create_view_pure_django
         serializer.save(user=request.user)#se le pasa el user como parametro sino tira error ya que el user no puede ser null, tambien se le puede pasar el content como content='abc' pero ahi no tomaria el content del formulario, sino el que le pasamos aca
         return Response(serializer.data,status=201)#parametro status=201 SI seria necesario
@@ -70,7 +74,7 @@ def tweet_action_view(request,*args, **kwargs):
         data=serializer.validated_data
         tweet_id=data.get("id")
         action=data.get("action")
-
+        content=data.get("content")
         qs=Tweet.objects.filter(id=tweet_id)
         if not qs.exists():
             return Response({}, status=404)
@@ -82,7 +86,7 @@ def tweet_action_view(request,*args, **kwargs):
         elif action=="unlike":   
             obj.likes.remove(request.user)
         elif action=="retweet":   
-            new_tweet = Tweet.objects.create(user=request.user, parent=obj)
+            new_tweet = Tweet.objects.create(user=request.user, parent=obj, content=content)
             serializer=TweetSerializer(new_tweet)
             return Response(serializer.data,status=200)
     return Response({},status=200)#sin mensaje de confirmacion ni datos de retorno
