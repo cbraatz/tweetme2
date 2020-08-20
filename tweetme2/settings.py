@@ -25,7 +25,7 @@ SECRET_KEY = 'j^55x&%71s$$wb#wdc=k405i371_x(gzjb$@topkj=fwxh2j_y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.mydomain.com'] # IMPORTANTE agregado para asegurar que los redirects vayan a hosts seguros.
+ALLOWED_HOSTS = ['127.0.0.1', '.mydomain.com', 'localhost'] # IMPORTANTE agregado para asegurar que los redirects vayan a hosts seguros.
 LOGIN_URL="/login" # el por defecto es "/accounts/login/"
 MAX_TWEET_LENGTH=240
 TWEET_ACTION_OPTIONS=["like","unlike","retweet"]
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #third-party
+    'corsheaders',
     'rest_framework',
     #internal
     'tweets',
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', #para interceptar las llamadas de React...creo 5:33
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -126,6 +128,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+CORS_ORIGIN_ALLOW_ALL=True #esto significa que cualquier website va a tener acceso a mis APIs (pero con lo siguiente limitamos a que url van a tener acceso a traves de expresiones regulares)
+CORS_URLS_REGEX = r'^/api/.*$'  #estas 2 configuraciones juntas permitiran a cualquier site acceder a mis APIs
+#es posible agregar un white list de sites a los que dejar acceder y excluir los demas, pero por el momento dejo asi
 
 DEFAULT_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
 
