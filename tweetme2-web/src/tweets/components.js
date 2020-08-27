@@ -1,8 +1,44 @@
 import React, {useEffect, useState} from 'react'
 import {loadTweets} from '../lookup'
 
+export function TweetsComponent(props){
+  const textAreaRef=React.createRef()
+  const [newTweets,setNewTweets]=useState([])
+  const handleSubmit= (event) => {
+    event.preventDefault()
+    const newVal=textAreaRef.current.value
+    let tempNewTweets=[...newTweets]//copying newTweets
+    //change this to a sever side call
+    console.log('bef='+tempNewTweets.length)
+    tempNewTweets.unshift({content:newVal , likes:0 , id:12323}) //unshift agrega el elemento al inicio de la lista o array
+    console.log('af='+tempNewTweets.length)
+    setNewTweets(tempNewTweets)
+    textAreaRef.current.value=''
+  }
+  return <div className={props.className}>
+          <div className='col-12 mb-3'>
+            <form onSubmit={handleSubmit}>
+              <textarea ref={textAreaRef} required={true} className='form-control' name='tweet'></textarea>
+              <button type='submit' className='btn btn-primary my-3'>Tweet</button>
+            </form>
+          </div>
+          <TweetsListComp newTweets={newTweets}/>
+         </div>
+}
 export function TweetsListComp(props){
-  const [tweets, setTweets] = useState([/*empty array*/]);
+  const [tweetsInit, setTweetsInit] = useState([]);
+  const [tweets, setTweets] = useState([])
+
+  useEffect(() =>{ //video 6:13:20
+      const final = [...props.newTweets].concat(tweetsInit)//lo que sera la lista nueva
+      if(final.length!==tweets.length){//si cambia el estado o sea si se agrega uno nuevo hay que actualizar la lista
+        setTweets(final)
+      }
+    }, [props.newTweets, tweets, tweetsInit]) //entre corchetes van las dependencias
+
+
+
+
   useEffect(() =>{ //lo mismo que agregar lo de abajo a una funcion aparte con >> const performLookup = () =>{...} o function performLookup(){...} y luego llamar acá a con useEffect(performLookup, [])
       //do my lookup
       console.log("N3")
@@ -10,7 +46,7 @@ export function TweetsListComp(props){
         console.log("N9")
         //console.log(response,status)
         if(status===200){
-          setTweets(response)//response should be an array
+          setTweetsInit(response)//response should be an array
         }else{
           alert("An error happened. "+response.message+". Status= "+status)
         }
@@ -18,7 +54,7 @@ export function TweetsListComp(props){
       console.log("N4")
       loadTweets(myCallback)
       console.log("N8")
-    }, []) //entre corchetes paso las dependencies al lookup
+    }, [tweetsInit]) //entre corchetes paso las dependencies al lookup
     return tweets.map(
       (item, index)=>{
         return <TweetComp tweet={item} className='my-5 py-5 border bg-white text-dark' key={`${index}-{item.id}`}/>

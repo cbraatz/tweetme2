@@ -2,7 +2,7 @@ import React from 'react';//useEffect is a hook that allows us to run the http r
 import logo from './logo.svg';
 import './App.css';
 
-import {TweetsListComp} from './tweets'
+import {TweetsComponent} from './tweets'
 
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <div>
-          <TweetsListComp />
+          <TweetsComponent />
         </div>
         <a
           className="App-link"
